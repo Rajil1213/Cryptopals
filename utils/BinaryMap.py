@@ -1,6 +1,5 @@
 from math import log2
-from sys import argv, exit
-
+from sys import exit
 
 class BinaryMap:
 
@@ -121,18 +120,3 @@ class BinaryMap:
         base64Equivalent += equals
         
         return base64Equivalent
-
-if __name__ == "__main__":
-
-    if not len(argv) == 2:
-        print("Usage: python3 BinaryMap.py <hex string>")
-        exit(1)
-
-    hexValue = argv[1]
-    mapping = BinaryMap()
-    # convert hex to binary
-    binaryValue = mapping.hexToBinary(hexValue)
-    # convert binary to base64
-    base64Value = mapping.binaryToBase64(binaryValue)
-
-    print(f"Base64 Equivalent: { base64Value }")
