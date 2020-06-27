@@ -85,6 +85,14 @@ class BinaryMap:
     
     @classmethod
     def binaryToHex(cls, binary):
+        """converts a string of binary digits to equivalent hex representation
+
+        Args:
+            binary (string): a string that holds a binary number
+
+        Returns:
+            string: hex representation of `binary`
+        """
 
         hexCharset = "0123456789abcdef"
         hex2binary = cls.getBinaryMapping(hexCharset)
