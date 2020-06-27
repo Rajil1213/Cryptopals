@@ -6,6 +6,15 @@ class BinaryMap:
 
     @classmethod
     def getBinary(cls, n=6):
+        """ Gets upto n-bits of binary values in order
+            For example, n=2 gives ["00", "01", "10", "11"]
+
+        Args:
+            n (int, optional): [no of bits]. Defaults to 6.
+
+        Returns:
+            [string]: [list of `n` bits of binary numbers as string, in order]
+        """
 
         twoBit = {"00", "01", "10", "11"}
         sixBit = ""
@@ -28,6 +37,15 @@ class BinaryMap:
         
     @classmethod
     def getBinaryMapping(cls, charset):
+        """Maps the characters in charset to their corresponding binary value, in order,
+        starting from 0
+
+        Args:
+            charset (string): the string of characters to map
+
+        Returns:
+            dict: dict() that maps each character in `charset` to a unique binary value
+        """
 
         n = len(charset)
 
@@ -48,6 +66,14 @@ class BinaryMap:
     
     @classmethod
     def hexToBinary(cls, hex):
+        """returns the binary equivalent of a hex value (string)
+
+        Args:
+            hex (string): the hex value to convert
+
+        Returns:
+            string: the binary equivalent of `hex`
+        """
         
         hexCharset = "0123456789abcdef"
         hex2binary = cls.getBinaryMapping(hexCharset)
@@ -60,6 +86,14 @@ class BinaryMap:
     
     @classmethod
     def binaryToBase64(cls, binary):
+        """converts a string of bits to its base64-encoded version and returns it
+
+        Args:
+            binary (string): a string of bits to convert
+
+        Returns:
+            [string]: a string representing the base64 encoding of `binary`
+        """ 
 
         uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         lowercase = "abcdefghijklmnopqrstuvwxyz"
@@ -96,7 +130,9 @@ if __name__ == "__main__":
 
     hexValue = argv[1]
     mapping = BinaryMap()
+    # convert hex to binary
     binaryValue = mapping.hexToBinary(hexValue)
+    # convert binary to base64
     base64Value = mapping.binaryToBase64(binaryValue)
 
     print(f"Base64 Equivalent: { base64Value }")
