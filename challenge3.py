@@ -1,3 +1,4 @@
+from math import inf
 import re
 from string import punctuation
 from sys import argv, exit
@@ -25,7 +26,37 @@ def byteXOR(ciphertext, key):
         
     return result
 
-def scoreText(text):
+def scoreTextChisquare(text):
+    
+    frequency_count = { key: 0 for key in FREQUENCY_TABLE }
+    letters = []
+    punctuationCount = 0
+    for letter in text:
+        if letter.isalpha():
+            letters.append(letter.lower())
+        if letter in punctuation:
+            punctuationCount += 1
+
+    n = len(text) - len(punctuation) 
+    if punctuationCount >= len(letters) or len(letters) == 0:
+        return inf
+
+    for letter in letters:
+        frequency_count[letter] += 1 / n
+
+    score = 0 
+    for letter in FREQUENCY_TABLE:
+        
+        observed = frequency_count[letter]
+        actual = FREQUENCY_TABLE[letter]
+
+        numerator = (observed - actual) ** 2
+        score += numerator / actual
+    
+    return score
+    
+
+def scoreTextPearson(text):
 
     frequency_count = { key: 0 for key in FREQUENCY_TABLE }
     letters = []
@@ -64,11 +95,7 @@ def scoreText(text):
     return score
     
 
-def main():
-
-    if not len(argv) == 2:
-        print("Usage python3 challenge3.py <ciphertext>")
-        exit(1)
+def pearsonRank(noOfResults=15):
 
     ciphertext = argv[1]
     asciiRange = 128
@@ -76,11 +103,10 @@ def main():
     texts = []
     for i in range(asciiRange):
         text = byteXOR(ciphertext, i)
-        score = scoreText(text)
+        score = scoreTextPearson(text)
         scores.append(score)
         texts.append(text)
     
-    noOfResults = 20
     print(f"Top { noOfResults } Results: ")
     topResults = [(txt, scr) for scr, txt in sorted(zip(scores, texts))]
     topResults.reverse()
@@ -93,6 +119,51 @@ def main():
         print(f"Rank: #{ rank }, Key: { key }, ASCII: { ascii }, Score: { score }")
         print(f"Plaintext: { plaintext }")
        
+
+def chisquareRank(noOfResults=15):
+
+    ciphertext = argv[1]
+    asciiRange = 128
+    scores = []
+    texts = []
+    for i in range(asciiRange):
+        text = byteXOR(ciphertext, i)
+        score = scoreTextChisquare(text)
+        scores.append(score)
+        texts.append(text)
+    
+    print(f"Top { noOfResults } Results: ")
+    topResults = [(txt, scr) for scr, txt in sorted(zip(scores, texts))]
+    for index in range(noOfResults):
+        rank = index + 1
+        plaintext = topResults[index][0]
+        score = topResults[index][1]
+        ascii = texts.index(plaintext)
+        key = chr(ascii)
+        print(f"Rank: #{ rank }, Key: { key }, ASCII: { ascii }, Score: { score }")
+        print(f"Plaintext: { plaintext }")
+
+
+def main():
+    if len(argv) != 4:
+        print("Usage: python3 challenge3.py <ciphertext> <metric> <noOfResults>")
+        print("Metrics: pearson chisquare")
+        print("noOfResults: 1 - 128")
+
+    noOfResults = int(argv[3]) 
+    if not 1 <= noOfResults <= 128:
+        print("Displaying Top 15 Results by Default")
+        noOfResults = 15
+
+    if argv[2].lower() == 'pearson':
+        pearsonRank(noOfResults)
+        exit(0)
+
+    if not argv[2].lower() == 'chisquare':
+        print("Using Chisquare Metric By Default")
+    
+    chisquareRank(noOfResults)
+     
 
 if __name__ == "__main__":
     main()
