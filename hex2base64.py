@@ -1,5 +1,5 @@
 from sys import argv, exit
-from utils import BinaryMap
+from utils.BinaryMap import BinaryMap
 
 def main():
 
