@@ -15,7 +15,7 @@ class BinaryMap:
             [string]: [list of `n` bits of binary numbers as string, in order]
         """
 
-        twoBit = {"00", "01", "10", "11"}
+        twoBit = ["00", "01", "10", "11"]
         sixBit = ""
         sixBitBinary = []
 
@@ -82,6 +82,30 @@ class BinaryMap:
             binaryEquivalent += hex2binary[char]
 
         return binaryEquivalent
+    
+    @classmethod
+    def binaryToHex(cls, binary):
+
+        hexCharset = "0123456789abcdef"
+        hex2binary = cls.getBinaryMapping(hexCharset)
+        binary2hex = { value:key for (key, value) in hex2binary.items() }
+        hexEquivalent = ""
+    
+        n = len(binary)
+        padding = 0 
+        zeros = ""
+        if not n % 4 == 0:
+            padding = 4 - (n % 4)
+            zeros = '0' * padding
+        
+        binary = zeros + binary
+        n += padding
+
+        for i in range(0, n, 4):
+            binaryValue = binary[i:i+4]
+            hexEquivalent += binary2hex[binaryValue]
+        
+        return hexEquivalent
     
     @classmethod
     def binaryToBase64(cls, binary):
