@@ -1,6 +1,7 @@
 from math import inf
 import os
 from utils.toolkit import Analysis
+from utils.XOR import AsciiXOR
 from utils.BinaryMap import BinaryMap
 
 def getKeyLength(hexVal):
@@ -17,6 +18,28 @@ def getKeyLength(hexVal):
     
     return actualKeyLength
     
+def getKeys(tranposedChunks):
+
+    pearsonKey = ""
+    chiSquareKey = ""
+    commonKey = ""
+    for chunk in transposedChunks:
+
+        decrypt = AsciiXOR(chunk)
+        pearsonResult = decrypt.pearsonRank(1, get=True)
+        chiSquareResult = decrypt.chisquareRank(1, get=True)
+        commonResult = decrypt.commonRank(1, get=True)
+        
+        pearsonKey += chr(pearsonResult[2])
+        chiSquareKey += chr(chiSquareResult[2])
+        commonKey += chr(commonResult[2])
+
+    """ Debug
+    print(f"By Karl Pearson Metric, Key: { pearsonKey }")
+    print(f"By Chi-squared Metric, Key: { chiSquareKey }")
+    print(f"By Common Metric, Key: { commonKey }")
+    """
+    return pearsonKey, chiSquareKey, commonKey
 
 def main():
 
@@ -40,8 +63,26 @@ def main():
     analyse = Analysis(hexVal)
     chunks = analyse.getChunks(chunkSize=actualKeyLength)
     transposedChunks = analyse.tranposeChunks(chunks)
-
-    
+    """ Debug
+    print(f"No. of chunks = { len(chunks) }")
+    print(f"No. of transposed chunks = { len(transposedChunks) }")
+    print(f"Length of a tranposed chunk = { len(transposedChunks[0]) }")
+    """
+    # keys = getKeys(tranposedChunks)
+    commonKey = "Terminator X: Bring the noise" # keys[2]
+    pearsonKey = "Terminator X: Bring the noIse" # keys[0]
+    chiSquareKey = "Terminator X: Bring the ioise" # keys[1]
+    decrypt = AsciiXOR(hexVal)
+    decryptCommon = decrypt.repeatKeyDecrypt(commonKey)
+    decryptPearson = decrypt.repeatKeyDecrypt(pearsonKey)
+    decryptChiSquare = decrypt.repeatKeyDecrypt(chiSquareKey)
+    print("From Common: ")
+    print(decryptCommon)
+    print("From Pearson: ")
+    print(decryptPearson)
+    print("From ChiSquare: ")
+    print(decryptChiSquare)
+        
 
 if __name__ == "__main__":
     main()
