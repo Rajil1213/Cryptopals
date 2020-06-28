@@ -58,6 +58,14 @@ class AsciiXOR:
     
 
     def repeatKeyEncrypt(self, key):
+        """returns the encrypted form of `self.text` using repeating-key XOR, in hex format
+
+        Args:
+            key (str): a string, representing the encryption key
+
+        Returns:
+            str: the encrypted string, in hex format
+        """
 
         plaintext = self.text
         keyLength = len(key)
@@ -66,10 +74,13 @@ class AsciiXOR:
 
         for i in range(noOfLetters):
             textVal = plaintext[i]
+            # perform modulo on key indices for 'repeating' key
             keyVal = key[i % keyLength]
+            # convert to ascii (decimal)
             textAscii = ord(textVal)
             keyAscii = ord(keyVal)
             result = textAscii ^ keyAscii
+            # convert to hex ('0x..'), remove the '0x', and make it length-2
             hexVal = hex(result)
             hexVal = hexVal[2:]
             if len(hexVal) == 1:
