@@ -20,7 +20,12 @@ class AsciiXOR:
         'r': 7.587, 's': 6.327,	't': 9.356,	'u': 2.758,	'v': 0.978,	'w': 2.560,	\
         'x': 0.150, 'y': 1.994, 'z': 0.077 }
 
+    # by how much should the score alter if the text has spaces
+    # penalizes the lack of spaces
+    REGULARIZER = 0.001  
+
     ciphertext = ""
+    
 
     def __init__(self, cipher):
        self.ciphertext = cipher
@@ -97,13 +102,20 @@ class AsciiXOR:
         frequency_count = { key: 0 for key in self.FREQUENCY_TABLE }
         letters = []
         punctuationCount = 0
+        spaceCount = 0
         for letter in text:
             # only get alphabets, convert to lowercase
-            if letter.isalpha():
+            # if any letter is  not ascii, score = inf (worst)
+            if not 0 <= ord(letter) <= 127:
+                return inf
+            if letter.lower() in self.FREQUENCY_TABLE:
                 letters.append(letter.lower())
             # get number of punctuations
             if letter in punctuation:
                 punctuationCount += 1
+            # get number of spaces
+            if letter.isspace:
+                spaceCount += 1
 
         noOfLetters = len(letters)   
         # too many punctuations? or, no letters?
@@ -125,6 +137,8 @@ class AsciiXOR:
             numerator = (observed - actual) ** 2
             score += numerator / actual
         
+        # more spaces = better chance of being a good choice
+        score -= spaceCount * self.REGULARIZER
         return score
         
     
@@ -142,14 +156,21 @@ class AsciiXOR:
         frequency_count = { key: 0 for key in self.FREQUENCY_TABLE }
         letters = []
         punctuationCount = 0
+        spaceCount = 0
         for letter in text:
+            # if any letter not ascii, score = 0 (worst)
+            if not 0 <= ord(letter) <= 127:
+                return 0
             # get only the alphabets, convert to lowercase 
-            if letter.isalpha():
+            if letter.lower() in self.FREQUENCY_TABLE:
                 letters.append(letter.lower())
                 continue
             # count the punctuations    
             if letter in punctuation:
                 punctuationCount += 1
+            # count spaces
+            if letter.isspace():
+                spaceCount += 1
 
         noOfLetters = len(text)  
         # if there are no letters or more punctuations than letters
@@ -175,15 +196,21 @@ class AsciiXOR:
 
         # get the Karl Pearons' Correlation Coefficient
         score, _ = pearsonr(observed, actual)
+        score += spaceCount * self.REGULARIZER
 
         return score
         
 
-    def pearsonRank(self, noOfResults=15):
+    def pearsonRank(self, noOfResults=15, get=False):
         """Displays top `noOfResults` for plaintext based on the Karl-Pearson metric
 
         Args:
             noOfResults (int, optional): the number of results to display. Defaults to 15.
+            get (boolean, optional): if set to True, returns the plaintext with the best score, along with its score
+            instead of printing. Defaults to False.
+        
+        Returns:
+            (str, float): a tuple of the best scoring text and its score, if `get=True`
         """
 
         scores = []
@@ -194,11 +221,17 @@ class AsciiXOR:
             scores.append(score)
             texts.append(text)
 
-        print(f"Top { noOfResults } Results: ")
+        if get == True:
+            max_score = max(scores)
+            best_text = texts[scores.index(max_score)]
+            return best_text, max_score
+        
         # sort the texts based on their scores in *descending* order
         # higher value of Karl Pearson Coefficient = better result
         topResults = [(txt, scr) for scr, txt in sorted(zip(scores, texts))]
         topResults.reverse()
+
+        print(f"Top { noOfResults } Results: ")
         for index in range(noOfResults):
             rank = index + 1
             plaintext = topResults[index][0]
@@ -209,11 +242,16 @@ class AsciiXOR:
             print(f"Plaintext: { plaintext }")
         
 
-    def chisquareRank(self, noOfResults=15):
+    def chisquareRank(self, noOfResults=15, get=False):
         """displays the top `noOfResults` for plaintext based on the Chi-Squared Metric
 
         Args:
             noOfResults (int, optional): the number of results to display. Defaults to 15.
+            get (boolean, optional): if set to True, returns the plaintext with the best score, along with its score
+            instead of printing. Defaults to False.
+
+        Returns:
+            (str, float): a tuple of the best scoring text and its score, if `get=True`
         """
 
         scores = []
@@ -224,10 +262,16 @@ class AsciiXOR:
             scores.append(score)
             texts.append(text)
         
-        print(f"Top { noOfResults } Results: ")
+        if get == True:
+            min_score = min(scores)
+            best_text = texts[scores.index(min_score)]
+            return best_text, min_score
+
         # sort texts based on their scores, in *ascending* order
         # lower the Chi-Squared Metric score = better the result
         topResults = [(txt, scr) for scr, txt in sorted(zip(scores, texts))]
+
+        print(f"Top { noOfResults } Results: ")
         for index in range(noOfResults):
             rank = index + 1
             plaintext = topResults[index][0]
