@@ -68,10 +68,10 @@ class Analysis:
         # print(f"Length of each chunk = { length }")
         # print(f"Total no. of chunks = { noOfChunks }")
         transposed = list()
-        for i in range(length):
+        for i in range(0, length, 2):
             value = ""
             for chunk in chunks:
-                value += chunk[i]
+                value += chunk[i:i+2] # one byte at a time
             transposed.append(value)
         
         # print(f"Length of each transposed chunk = { len(transposed[0]) }")
