@@ -20,6 +20,9 @@ class AsciiXOR:
         'r': 7.587, 's': 6.327,	't': 9.356,	'u': 2.758,	'v': 0.978,	'w': 2.560,	\
         'x': 0.150, 'y': 1.994, 'z': 0.077 }
 
+    # Most Common Letters by convention
+    COMMON = "etaoin shrdlu"
+    
     # by how much should the score alter if the text has spaces
     # penalizes the lack of spaces
     REGULARIZER = 0.001  
@@ -112,7 +115,7 @@ class AsciiXOR:
             # convert 'byte' from hex to decimal
             byteDecimal = int(byte, base=16)
             # perform XOR with a character of the `key`, wrap it around with module `keyLength`
-            output = byteDecimal ^ key[keyIndex % keyLength]
+            output = byteDecimal ^ ord(key[keyIndex % keyLength])
             # change decimal to equivalent ASCII character
             character = chr(output)
             # remove non-printable ASCII characters with values 00 to 1F
@@ -232,6 +235,22 @@ class AsciiXOR:
         score += spaceCount * self.REGULARIZER
 
         return score
+    
+
+    def scoreTextCommon(self, text):
+
+        score = 0
+        spaceWeight = (self.FREQUENCY_TABLE['n'] + self.FREQUENCY_TABLE['s']) / 2
+        for char in text:
+            letter = char.lower()
+            if letter in self.COMMON:
+                if letter.isspace():
+                    weight = spaceWeight
+                else:
+                    weight = self.FREQUENCY_TABLE[letter]
+                score += weight
+
+        return score
         
 
     def pearsonRank(self, noOfResults=15, get=False):
@@ -243,7 +262,7 @@ class AsciiXOR:
             instead of printing. Defaults to False.
         
         Returns:
-            (str, float): a tuple of the best scoring text and its score, if `get=True`
+            (str, float, key): a tuple of the best scoring text, its score and the key, if `get=True`
         """
 
         scores = []
@@ -256,8 +275,9 @@ class AsciiXOR:
 
         if get == True:
             max_score = max(scores)
-            best_text = texts[scores.index(max_score)]
-            return best_text, max_score
+            key = scores.index(max_score)
+            best_text = texts[key]
+            return best_text, max_score, key
         
         # sort the texts based on their scores in *descending* order
         # higher value of Karl Pearson Coefficient = better result
@@ -297,12 +317,55 @@ class AsciiXOR:
         
         if get == True:
             min_score = min(scores)
-            best_text = texts[scores.index(min_score)]
-            return best_text, min_score
+            key = scores.index(min_score)
+            best_text = texts[key]
+            return best_text, min_score, key
 
         # sort texts based on their scores, in *ascending* order
         # lower the Chi-Squared Metric score = better the result
         topResults = [(txt, scr) for scr, txt in sorted(zip(scores, texts))]
+
+        print(f"Top { noOfResults } Results: ")
+        for index in range(noOfResults):
+            rank = index + 1
+            plaintext = topResults[index][0]
+            score = topResults[index][1]
+            ascii = texts.index(plaintext)
+            key = chr(ascii)
+            print(f"Rank: #{ rank }, Key: { key }, ASCII: { ascii }, Score: { score }")
+            print(f"Plaintext: { plaintext }")
+
+    
+    def commonRank(self, noOfResults=15, get=False):
+        """displays the top `noOfResults` for plaintext based on the `ETAION SHRDLU` Metric
+
+        Args:
+            noOfResults (int, optional): the number of results to display. Defaults to 15.
+            get (boolean, optional): if set to True, returns the plaintext with the best score, along with its score
+            instead of printing. Defaults to False.
+
+        Returns:
+            (str, float, key): a tuple of the best scoring text, its score and the key, if `get=True`
+        """
+
+        scores = []
+        texts = []
+        for i in range(128):
+            text = self.singleByteXOR(i)
+            score = self.scoreTextCommon(text)
+            scores.append(score)
+            texts.append(text)
+        
+        if get == True:
+            max_score = max(scores)
+            key = scores.index(max_score)
+            best_text = texts[key]
+            return best_text, max_score, key
+
+        # sort texts based on their scores, in *desending* order
+        # higher the ETAOIN SHRDLU Metric score = better the result
+        topResults = [(txt, scr) for scr, txt in sorted(zip(scores, texts))]
+        topResults.reverse()
 
         print(f"Top { noOfResults } Results: ")
         for index in range(noOfResults):
