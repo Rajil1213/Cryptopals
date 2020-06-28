@@ -12,13 +12,16 @@ def main():
     scores = []
     texts = []
     for cipher in ciphers:
+        # remove the trailing whitespace(newline) and initialize AsciiXOR with it
         decode = AsciiXOR(cipher.rstrip())
+        # get the top result of deciphering => (text, score)
         result = decode.chisquareRank(get=True)
         text = result[0]
         score = result[1]
         texts.append(text)
         scores.append(score)
     
+    # sort the texts according to their scores
     ranking = [ (text, score) for (score, text) in sorted(zip(scores, texts))]
 
     print("Top 10 Lines:")
