@@ -36,6 +36,11 @@ def main():
 
     actualKeyLength = 29 # getKeyLength(hexVal) 
     # print(f"Key Length = { actualKeyLength }")
+
+    analyse = Analysis(hexVal)
+    chunks = analyse.getChunks(chunkSize=actualKeyLength)
+    transposedChunks = analyse.tranposeChunks(chunks)
+
     
 
 if __name__ == "__main__":
