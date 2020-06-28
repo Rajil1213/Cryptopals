@@ -6,6 +6,7 @@ def main():
         print("Usage: python3 challenge3.py <ciphertext> <metric> <noOfResults>")
         print("Metrics: pearson chisquare")
         print("noOfResults: 1 - 128")
+        exit(1)
 
     noOfResults = int(argv[3]) 
     if not 1 <= noOfResults <= 128:
