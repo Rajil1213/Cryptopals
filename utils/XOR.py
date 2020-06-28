@@ -24,11 +24,10 @@ class AsciiXOR:
     # penalizes the lack of spaces
     REGULARIZER = 0.001  
 
-    ciphertext = ""
+    text = ""
     
-
-    def __init__(self, cipher):
-       self.ciphertext = cipher
+    def __init__(self, txt):
+       self.text = txt
 
     def singleByteXOR(self, key):
         """perform single-byte XOR with `key`
@@ -40,7 +39,7 @@ class AsciiXOR:
             str: a plain-text string obtained by single-byte XOR-ing `self.ciphertext` with `key`
         """
 
-        ciphertext = self.ciphertext
+        ciphertext = self.text
         n = len(ciphertext)
         result = ""
         for i in range(0, n, 2):
@@ -57,8 +56,31 @@ class AsciiXOR:
             
         return result
     
+
+    def repeatKeyEncrypt(self, key):
+
+        plaintext = self.text
+        keyLength = len(key)
+        noOfLetters = len(plaintext)
+        ciphertext = ""
+
+        for i in range(noOfLetters):
+            textVal = plaintext[i]
+            keyVal = key[i % keyLength]
+            textAscii = ord(textVal)
+            keyAscii = ord(keyVal)
+            result = textAscii ^ keyAscii
+            hexVal = hex(result)
+            hexVal = hexVal[2:]
+            if len(hexVal) == 1:
+                hexVal = '0'+ hexVal
+            # print(f"{ textVal } [{ textAscii }] + { keyVal } = { hexVal }")
+            ciphertext += hexVal
+        
+        return ciphertext
+
     
-    def repeatKeyXOR(self, key):
+    def repeatKeyDecrypt(self, key):
         """performs repeat-key XOR on `self.ciphertext` with `key`
 
         Args:
@@ -67,7 +89,7 @@ class AsciiXOR:
         Returns:
             str: a string obtained by repeat-key XORing `self.ciphertext` with `key`
         """
-        ciphertext = self.ciphertext
+        ciphertext = self.text
         n = len(ciphertext)
         keyLength = len(key)
         result = ""
