@@ -94,4 +94,28 @@ class BinaryMap:
         base64Equivalent += equals
         
         return base64Equivalent
+    
+    @classmethod
+    def base64ToBinary(cls, base64):
         
+        uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        lowercase = "abcdefghijklmnopqrstuvwxyz"
+        numbers = "0123456789"
+        specials = "+/"
+        base64Charset = uppercase + lowercase + numbers + specials 
+        base642Binary = cls.getBinaryMapping(base64Charset)
+        binaryEquivalent = ""
+
+        equals = base64.count('=')
+        padded = equals * 2
+        base64 = base64.rstrip('=')
+
+        for char in base64:
+            binary = base642Binary[char]
+            binaryEquivalent += binary
+        
+        # remove padded zeros
+        if padded > 0:
+            binaryEquivalent = binaryEquivalent[:-padded]
+        
+        return binaryEquivalent
