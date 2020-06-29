@@ -54,13 +54,44 @@ class aes:
             0x0B, 0x0D, 0x09, 0x0E
             )
 
-    # 8-bit Galois Field: GF(2^8)
-    GF = ffield.FField(8)
+    # RoundKey Constants
+    RC = (0x00, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36)
 
-    text = ""
+    text = b''
+    roundkeys = []
+    key = b''
 
-    def __init__(self, text):
+    def __init__(self, text, key):
         self.text = text
+        self.key = key
+    
+    # Round Key Generation
+    def g(self, byte, round):
+
+        # shift
+        length = len(byte)
+        shiftedByte = []
+        for i in range(length):
+            asciiVal = byte[(i+1) % length]
+            shiftedByte.append(asciiVal)
+
+        # substitute
+        for i in len(shiftedByte):
+            value = shiftedByte[i]
+            i, j = hex(value)[2:]
+            i = int(i, base=16)
+            j = int(j, base=16)
+            hexVal = self.SBOX[i * 16 + j]
+            shiftedByte[i] = hexVal
+        
+        # add round
+        shiftedByte[0] ^= self.RC[round]
+
+        shiftedByte = bytes(shiftedByte)
+
+    def roundKey(self):
+
+
     
     # Byte Substitution Layer
     def byteSub(self, inputLayer):
