@@ -238,6 +238,18 @@ class AsciiXOR:
     
 
     def scoreTextCommon(self, text):
+        """Uses `ETAOIN SHRDLU` metric to score text.
+        If these letters appears in the text, weigh them by their actual letter frequency
+        in the English language, and get the cumulative weight as the score.
+        The weight of the `space` character is taken to be the average frequency of the letters
+        `N` and `S` as per their occurrence in `ETAOIN SHRDLU`.
+
+        Args:
+            text (string): a string that holds plaintext (ASCII)
+
+        Returns:
+            float: the score for `text`
+        """
 
         score = 0
         spaceWeight = (self.FREQUENCY_TABLE['n'] + self.FREQUENCY_TABLE['s']) / 2
