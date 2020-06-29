@@ -47,7 +47,6 @@ def main():
     filename = "6.txt"
     path = os.path.join(directory, filename)
     with open(path, 'r') as f:
-        # read only 10 lines
         lines = f.readlines()
         for i in range(len(lines)):
             lines[i] = lines[i].rstrip()
@@ -57,7 +56,7 @@ def main():
     decimal = int(binary, base=2)
     hexVal = hex(decimal)[2:]
 
-    actualKeyLength = 29 # getKeyLength(hexVal) 
+    actualKeyLength = getKeyLength(hexVal) 
     # print(f"Key Length = { actualKeyLength }")
 
     analyse = Toolkit(hexVal)
@@ -68,10 +67,11 @@ def main():
     print(f"No. of transposed chunks = { len(transposedChunks) }")
     print(f"Length of a tranposed chunk = { len(transposedChunks[0]) }")
     """
-    # keys = getKeys(tranposedChunks)
-    commonKey = "Terminator X: Bring the noise" # keys[2]
-    pearsonKey = "Terminator X: Bring the noIse" # keys[0]
-    chiSquareKey = "Terminator X: Bring the ioise" # keys[1]
+    keys = getKeys(transposedChunks)
+    commonKey = keys[2]
+    pearsonKey = keys[0]
+    chiSquareKey = keys[1]
+
     decrypt = AsciiXOR(hexVal)
     decryptCommon = decrypt.repeatKeyDecrypt(commonKey)
     decryptPearson = decrypt.repeatKeyDecrypt(pearsonKey)
