@@ -97,6 +97,14 @@ class BinaryMap:
     
     @classmethod
     def base64ToBinary(cls, base64):
+        """convert a base64 encoded string into a string of its equivalent binary
+
+        Args:
+            base64 (str): a base64 encoded string
+
+        Returns:
+            str: corresponding string of bits
+        """
         
         uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         lowercase = "abcdefghijklmnopqrstuvwxyz"
