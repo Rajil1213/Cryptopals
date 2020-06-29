@@ -1,6 +1,6 @@
 from math import inf
 import os
-from utils.toolkit import Analysis
+from utils.toolkit import Toolkit
 from utils.XOR import AsciiXOR
 from utils.BinaryMap import BinaryMap
 
@@ -8,7 +8,7 @@ def getKeyLength(hexVal):
 
     actualKeyLength = 2
     minDistance = inf
-    analyse = Analysis(hexVal)
+    analyse = Toolkit(hexVal)
     for keyLength in range(2, 41):
         distance = analyse.avgHamDist(chunkSize=keyLength)
         # print(f"KeyLength: { keyLength }, Hamming Distance: { distance }")
@@ -60,7 +60,7 @@ def main():
     actualKeyLength = 29 # getKeyLength(hexVal) 
     # print(f"Key Length = { actualKeyLength }")
 
-    analyse = Analysis(hexVal)
+    analyse = Toolkit(hexVal)
     chunks = analyse.getChunks(chunkSize=actualKeyLength)
     transposedChunks = analyse.tranposeChunks(chunks)
     """ Debug
