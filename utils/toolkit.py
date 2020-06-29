@@ -1,6 +1,6 @@
 from sys import exit
 
-class Analysis:
+class Toolkit:
 
     text = ""
     
@@ -100,5 +100,5 @@ class Analysis:
 if __name__ == "__main__":
     text1 = input("enter text1: ")
     text2 = input("enter text2: ")
-    distance = Analysis().strHamDist(text1, text2)
+    distance = Toolkit().strHamDist(text1, text2)
     print(f"Distance: { distance }")
