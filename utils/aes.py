@@ -148,16 +148,13 @@ class aes:
 
 
     def __init__(self, key):
-        self.key = bytes(key, 'ascii')
+        self.key = key
         self.generateRoundKeys()
 
 
     def getInitialState(self, text, mode='encrypt'):
 
-        if mode == 'encrypt':
-            textBytes = bytes(text, 'ascii')
-        else:
-            textBytes = text
+        textBytes = text
         textHex = textBytes.hex()
 
         state = [[1 for i in range(4)] for j in range(4)]
@@ -386,7 +383,7 @@ class aes:
 
 def testSuite():
 
-    encrypt = aes('Thats my Kung Fu')
+    encrypt = aes(b'Thats my Kung Fu')
     
     # print("Key Generation Test")
     keys = encrypt.roundKeys
@@ -401,7 +398,7 @@ def testSuite():
         print(keys[i+3])
     """
     # print("Initial State Matrix Test")
-    state = encrypt.getInitialState("Two One Nine Two")
+    state = encrypt.getInitialState(b"Two One Nine Two")
     # print(state)
     """
     [['54', '4f', '4e', '20'],
@@ -468,7 +465,7 @@ def testSuite():
      ['3d', 'f4', '9b', '8b']]
     """
 
-    plaintext = "Two One Nine Two"
+    plaintext = b"Two One Nine Two"
     ciphertext = encrypt.encrypt(plaintext)
     print(ciphertext)
     """
