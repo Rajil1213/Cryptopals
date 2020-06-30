@@ -1,4 +1,4 @@
-from aes import aes
+from utils.aes import aes
 from sys import exit
 
 class ecb:
