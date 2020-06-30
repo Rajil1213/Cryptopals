@@ -1,4 +1,3 @@
-from pyfinite import ffield
 from math import log
 
 class aes:
@@ -55,44 +54,99 @@ class aes:
             )
 
     # RoundKey Constants
-    RC = (0x00, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36)
+    RC = (0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36)
 
-    text = b''
-    roundkeys = []
-    key = b''
+    roundKeys = []
+    key = b""
 
-    def __init__(self, text, key):
-        self.text = text
-        self.key = key
-    
+
     # Round Key Generation
     def g(self, byte, round):
 
         # shift
+        # byte = 4 * 8 bits = 8 hex Values
         length = len(byte)
+        noOfBytes = length // 2
+        print(length, end=' ')
         shiftedByte = []
-        for i in range(length):
-            asciiVal = byte[(i+1) % length]
+        for i in range(0, noOfBytes):
+            index = 2 * i
+            asciiVal1 = byte[(index+2) % length]
+            asciiVal2 = byte[(index+3) % length]
+            asciiVal = asciiVal1 + asciiVal2
             shiftedByte.append(asciiVal)
+        
+        print(f"Shifted: { shiftedByte }")
 
         # substitute
-        for i in len(shiftedByte):
-            value = shiftedByte[i]
-            i, j = hex(value)[2:]
+        for index in range(noOfBytes):
+
+            i, j = shiftedByte[index]
             i = int(i, base=16)
             j = int(j, base=16)
-            hexVal = self.SBOX[i * 16 + j]
-            shiftedByte[i] = hexVal
+            val = self.SBOX[i * 16 + j]
+            shiftedByte[index] = val
+        
+        print(f"Substituted Bytes: { shiftedByte }")
         
         # add round
-        shiftedByte[0] ^= self.RC[round]
+        shiftedByte[0] ^= self.RC[round - 1]
 
-        shiftedByte = bytes(shiftedByte)
+        print(f"After RC: { shiftedByte }")
 
-    def roundKey(self):
+        shiftedHexVal = list()        
+        for shifted in shiftedByte:
+            
+            value = hex(shifted)[2:]
+            if len(value) == 1:
+                value = '0' + value
+            
+            shiftedHexVal.append(value)
+
+        print(f"In hex: { shiftedHexVal }")
+        
+        shiftedHexVal = ''.join(shiftedHexVal)
+        print(f"g() => {shiftedHexVal}")
+        
+        return shiftedHexVal
 
 
-    
+    def generateRoundKeys(self):
+        
+        # initialize
+        for i in range(0, 16, 4):
+            keyByte = self.key[i:i+4]
+            keyVal = keyByte.hex()  
+            self.roundKeys.append(keyVal)
+        
+        print(f"After Initialization: { self.roundKeys }")
+        
+        # recursive update
+        for i in range(4, 44):
+
+            numOfRound = (i // 4)
+            print(f"Round: { numOfRound }")
+            if i % 4 == 0:
+                term1 = self.roundKeys[i - 4]
+                term2 = self.g(self.roundKeys[i - 1], numOfRound)
+            else:
+                term1 = self.roundKeys[i - 1]
+                term2 = self.roundKeys[i - 4]
+            
+            # print(f"Term1: {term1}, type: {type(term1)}")
+            # print(f"Term2: {term2}, type: {type(term2)}")
+            term1Val = int(term1, base=16)
+            term2Val = int(term2, base=16)
+            result = term1Val ^ term2Val
+            hexVal = hex(result)[2:]
+            self.roundKeys.append(hexVal)
+            print(self.roundKeys[i:i+4])
+
+
+    def __init__(self, key):
+        self.key = bytes(key, 'ascii')
+        self.generateRoundKeys()
+
     # Byte Substitution Layer
     def byteSub(self, inputLayer):
 
@@ -173,13 +227,15 @@ class aes:
 
 
 if __name__ == "__main__":
-
+            
+    """ 
     dummy = [[0, 1, 2, 3],
              [4, 5, 6, 7],
              [8, 9, 10, 11],
              [12, 13, 14, 15]
             ]
-    encrypt = aes('abc')
+    
+    
     print(encrypt.shiftRows(dummy))
 
     print(encrypt.byteSub(bytes('yellow submarine', 'ascii')))
@@ -192,3 +248,14 @@ if __name__ == "__main__":
                 ]
 
     print(encrypt.mixColumns(testMatrix))
+    """
+    encrypt = aes('Thats my Kung Fu')
+    keys = encrypt.roundKeys
+    print(f"Generated {len(keys)} roundKeys")
+
+    for i in range(0, 44, 4):
+        print(f"Round { i // 4 }")
+        print(keys[i], end=',')
+        print(keys[i+1], end=',')
+        print(keys[i+2], end=',')
+        print(keys[i+3])
