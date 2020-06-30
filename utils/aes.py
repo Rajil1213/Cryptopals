@@ -1,4 +1,4 @@
-from math import log
+from sys import exit
 
 class aes:
 
@@ -60,14 +60,14 @@ class aes:
     key = b""
 
 
-    # Round Key Generation
+    # Precomputation of Round Keys
     def g(self, byte, round):
 
         # shift
         # byte = 4 * 8 bits = 8 hex Values
         length = len(byte)
         noOfBytes = length // 2
-        print(length, end=' ')
+        # print(length, end=' ')
         shiftedByte = []
         for i in range(0, noOfBytes):
             index = 2 * i
@@ -76,7 +76,7 @@ class aes:
             asciiVal = asciiVal1 + asciiVal2
             shiftedByte.append(asciiVal)
         
-        print(f"Shifted: { shiftedByte }")
+        # print(f"Shifted: { shiftedByte }")
 
         # substitute
         for index in range(noOfBytes):
@@ -87,12 +87,12 @@ class aes:
             val = self.SBOX[i * 16 + j]
             shiftedByte[index] = val
         
-        print(f"Substituted Bytes: { shiftedByte }")
+        # print(f"Substituted Bytes: { shiftedByte }")
         
         # add round
         shiftedByte[0] ^= self.RC[round - 1]
 
-        print(f"After RC: { shiftedByte }")
+        # print(f"After RC: { shiftedByte }")
 
         shiftedHexVal = list()        
         for shifted in shiftedByte:
@@ -103,10 +103,10 @@ class aes:
             
             shiftedHexVal.append(value)
 
-        print(f"In hex: { shiftedHexVal }")
+        # print(f"In hex: { shiftedHexVal }")
         
         shiftedHexVal = ''.join(shiftedHexVal)
-        print(f"g() => {shiftedHexVal}")
+        # print(f"g() => {shiftedHexVal}")
         
         return shiftedHexVal
 
@@ -119,13 +119,12 @@ class aes:
             keyVal = keyByte.hex()  
             self.roundKeys.append(keyVal)
         
-        print(f"After Initialization: { self.roundKeys }")
+        # print(f"After Initialization: { self.roundKeys }")
         
         # recursive update
         for i in range(4, 44):
 
             numOfRound = (i // 4)
-            print(f"Round: { numOfRound }")
             if i % 4 == 0:
                 term1 = self.roundKeys[i - 4]
                 term2 = self.g(self.roundKeys[i - 1], numOfRound)
@@ -139,32 +138,83 @@ class aes:
             term2Val = int(term2, base=16)
             result = term1Val ^ term2Val
             hexVal = hex(result)[2:]
+            if len(hexVal) != 8:
+                padding = 8 - len(hexVal)
+                hexVal = ('0' * padding) + hexVal
             self.roundKeys.append(hexVal)
-            print(self.roundKeys[i:i+4])
+            # print(f"Round: { numOfRound }")
+            # print(self.roundKeys[i:i+4])
+        
+        # exit(1)
 
 
     def __init__(self, key):
         self.key = bytes(key, 'ascii')
         self.generateRoundKeys()
 
+
+    def getInitialState(self, plaintext):
+
+        plainBytes = bytes(plaintext, 'ascii')
+        plainHex = plainBytes.hex()
+
+        state = [[1 for i in range(4)] for j in range(4)]
+
+        for j in range(4):
+            for i in range(4):
+                index = 2 * (j * 4 + i)
+                hexVal = plainHex[index:index+2]
+                state[i][j] = hexVal
+
+        return state
+
+    # Key Addition Layer
+    def addKey(self, productMatrix, round):
+        
+        rows = len(productMatrix)
+        cols = len(productMatrix[0])
+
+        sumMatrix = [[1 for i in range(4)] for j in range(4)]
+        key = self.roundKeys[4*round: 4*round+4]
+        key = ''.join(key)
+
+        for j in range(cols):
+            row = []
+            for i in range(rows):
+                index = 2 * (j * 4 + i)
+                matVal = int(productMatrix[i][j], base=16)
+                keyVal = int(key[index:index+2], base=16) # two nibbles at a time
+                result = matVal ^ keyVal
+                result = hex(result)[2:]
+                if len(result) == 1:
+                    result = '0' + result
+
+                sumMatrix[i][j] = result
+        
+        return sumMatrix
+
+
+
     # Byte Substitution Layer
-    def byteSub(self, inputLayer):
+    def byteSub(self, addedMatrix):
 
         stateMatrix = []
-        for i in range(4):
+        rows = len(addedMatrix)
+        cols = len(addedMatrix[0])
+
+        for i in range(rows):
 
             row = []
-            for j in range(4):
+            for j in range(cols):
 
-                inputIndex = i * 4 + j
-                byte = inputLayer[inputIndex]
-                byte = hex(byte)[2:]
+                byte = addedMatrix[i][j] 
                 if len(byte) == 0:
                     byte = '0' + byte
                 rowIndex = int(byte[0], base=16)
                 colIndex = int(byte[1], base=16) 
                 index = rowIndex * 16 + colIndex
-                row.append(self.SBOX[index])
+                sbox = hex(self.SBOX[index])[2:]
+                row.append(sbox)
 
             stateMatrix.append(row)
         
@@ -178,11 +228,11 @@ class aes:
         rows = len(stateMatrix)
         cols = len(stateMatrix[0])
 
-        for i in range(cols):
+        for i in range(rows):
             row = []
-            for j in range(rows):
-                rowIndex = (j + i) % rows
-                value = stateMatrix[rowIndex][i]
+            for j in range(cols):
+                colIndex = (i + j) % rows
+                value = stateMatrix[i][colIndex]
                 row.append(value) 
             shiftedMatrix.append(row)
                 
@@ -217,45 +267,150 @@ class aes:
                 total = 0
                 for k in range(rows):
                     diffElem = self.DIFFUSION_MATRIX[j * 4 + k]
-                    shiftMatElem = shiftedMatrix[k][i]
-                    product = self.gfMul(diffElem, shiftMatElem) # self.GF.Multiply(diffElem, shiftMatElem)
+                    shiftMatElem = int(shiftedMatrix[k][i], base=16)
+                    product = self.gfMul(diffElem, shiftMatElem) 
                     total ^= product
-                productMatrix[j][i] = hex(total)
+                productMatrix[j][i] = hex(total)[2:]
 
         return productMatrix
-
-
-
-if __name__ == "__main__":
-            
-    """ 
-    dummy = [[0, 1, 2, 3],
-             [4, 5, 6, 7],
-             [8, 9, 10, 11],
-             [12, 13, 14, 15]
-            ]
     
+    def getCiphertext(self, cipherState):
+
+        rows = len(cipherState)
+        cols = len(cipherState[0])
+
+        ciphertext = ""
+
+        for j in range(cols):
+            for i in range(rows):
+                value = cipherState[i][j]
+                ciphertext += value
+        
+        return ciphertext
     
-    print(encrypt.shiftRows(dummy))
+    def encrypt(self, plaintext):
 
-    print(encrypt.byteSub(bytes('yellow submarine', 'ascii')))
+        # initial block
+        state = self.getInitialState(plaintext)
+        # print(f"Initial State: {state}")
+        added = self.addKey(state, 0)
+        # print(f"After Key 0 Add: {added}")
 
-    testMatrix = [
-                    [0x63, 0xeb, 0x9f, 0xa0],
-                    [0x2f, 0x93, 0x92, 0xc0],
-                    [0xaf, 0xc7, 0xab, 0x30],
-                    [0xa2, 0x20, 0xcb, 0x2b]
-                ]
+        # 9 rounds of full block
+        for numRound in range(1, 10):
+            # print(f"Round {numRound}")
+            subbed = self.byteSub(added)
+            # print(f"Byte Substitution: {subbed}")
+            shifted = self.shiftRows(subbed)
+            # print(f"Row Shifted: {shifted}")
+            mixed = self.mixColumns(shifted)
+            # print(f"Mix Columned: {mixed}")
+            added = self.addKey(mixed, numRound)
+            # print(f"Add Key'd: {added}")
 
-    print(encrypt.mixColumns(testMatrix))
-    """
+        # final block
+        # print("Final Round:")
+        subbed = self.byteSub(added)
+        # print(f"Byte Subbed: {subbed}")
+        shifted = self.shiftRows(subbed)
+        # print(f"Row Shifted: {shifted}")
+        state = self.addKey(shifted, 10)
+        # print(f"Add Key'd: {state}")
+
+        ciphertext = self.getCiphertext(state)
+        
+        return ciphertext
+
+def testSuite():
+
     encrypt = aes('Thats my Kung Fu')
+    
+    print("Key Generation Test")
     keys = encrypt.roundKeys
-    print(f"Generated {len(keys)} roundKeys")
+
+    print(f"Generated {len(keys)} roundKeys") # 44
 
     for i in range(0, 44, 4):
-        print(f"Round { i // 4 }")
+        print(f"Round {i}")
         print(keys[i], end=',')
         print(keys[i+1], end=',')
         print(keys[i+2], end=',')
         print(keys[i+3])
+
+    print("Initial State Matrix Test")
+    state = encrypt.getInitialState("Two One Nine Two")
+    print(state)
+    """
+    [['54', '4f', '4e', '20'],
+     ['77', '6e', '69', '54'],
+     ['6f', '65', '6e', '77'],
+     ['20', '20', '65', '6f']]
+    """
+
+    print("Add Round Key Test for Round 0")    
+    added = encrypt.addKey(state, 0)
+    print(added)
+    """
+    [['00', '3c', '6e', '47'],
+     ['1f', '4e', '22', '74'],
+     ['0e', '08', '1b', '31'],
+     ['54', '59', '0b', '1a']]
+    """
+
+    print("Byte Substitution Test Round 1")
+    subs = encrypt.byteSub(added)
+    print(subs)
+    """
+    [['63', 'eb', '9f', 'a0'],
+     ['c0', '2f', '93', '92'],
+     ['ab', '30', 'af', 'c7'],
+     ['20', 'cb', '2b', 'a2']]  
+    """
+    print("Shift Rows Test")
+    shifted = encrypt.shiftRows(subs)
+    print(shifted)
+    """
+    [['63', 'eb', '9f', 'a0'], 
+     ['2f', '93', '92', 'c0'], 
+     ['af', 'c7', 'ab', '30'], 
+     ['a2', '20', 'cb', '2b']]
+    """
+
+    print("Mix Columns Test")
+    mixed = encrypt.mixColumns(shifted)
+    print(mixed)
+    """
+    [['ba', '84', 'e8', '1b'], 
+     ['75', 'a4', '8d', '40'],
+     ['f4', '8d', '6', '7d'], 
+     ['7a', '32', 'e', '5d']]
+    """
+
+    print("Add Round Key Test for Round 1")
+    added = encrypt.addKey(mixed, 1)
+    print(added)
+    """
+    [['58', '15', '59', 'cd'], 
+     ['47', 'b6', 'd4', '39'], 
+     ['08', '1c', 'e2', 'df'], 
+     ['8b', 'ba', 'e8', 'ce']]
+    """
+    print("Byte Substitution Test for Round 2")
+    subbed = encrypt.byteSub(added) 
+    print(subbed)
+    """
+    [['6a', '59', 'cb', 'bd'], 
+     ['a0', '4e', '48', '12'], 
+     ['30', '9c', '98', '9e'], 
+     ['3d', 'f4', '9b', '8b']]
+    """
+
+
+if __name__ == "__main__":
+
+    # testSuite()    
+    encrypt = aes('Thats my Kung Fu') 
+    plaintext = "Two One Nine Two"
+    cipherState = encrypt.encrypt(plaintext)
+
+    print(cipherState)    
