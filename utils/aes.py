@@ -405,12 +405,14 @@ def testSuite():
      ['3d', 'f4', '9b', '8b']]
     """
 
+    plaintext = "Two One Nine Two"
+    ciphertext = encrypt.encrypt(plaintext)
+    print(ciphertext)
+    """
+    29c3505f571420f6402299b31a02d73a
+    """
+
 
 if __name__ == "__main__":
 
-    # testSuite()    
-    encrypt = aes('Thats my Kung Fu') 
-    plaintext = "Two One Nine Two"
-    cipherState = encrypt.encrypt(plaintext)
-
-    print(cipherState)    
+    testSuite()    
