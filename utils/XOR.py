@@ -6,7 +6,8 @@ from scipy.stats import pearsonr
 
 class AsciiXOR:
     """performs some XOR encryption and decryption on texts, and also ranks results
-    based on the Karl-Pearson and/or the Chi-Squared Metric
+    based on the Karl-Pearson and/or the Chi-Squared Metric and/or
+    the `ETAOIN SHRDLU` frequency analysis
 
     Returns:
         AsciiXOR: an object of this class with `self.ciphertext` = passed_in_argument
