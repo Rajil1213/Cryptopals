@@ -40,7 +40,6 @@ def detectDuplicates(line, chunkSize):
     # get duplicate chunks
     duplicateChunks = []
     for uniqueChunk in uniqueChunks:
-
         count = chunks.count(uniqueChunk)
         if count > 1:
             print(f"Duplicates: {count}")
@@ -54,11 +53,9 @@ def detectDuplicates(line, chunkSize):
     endColor = "\033[0m"
     
     for chunk in chunks:
-        
         if chunk not in duplicateChunks:
             print(chunk, end='')
             continue
-
         print(startColor+chunk+endColor, end='')
     
     print()
@@ -83,5 +80,3 @@ def main():
         
 if __name__ == "__main__":
     main()
-
-
