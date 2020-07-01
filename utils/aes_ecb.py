@@ -1,4 +1,8 @@
-from utils.aes import aes
+if __name__ == "__main__":
+    from aes import aes 
+else:
+    from utils.aes import aes
+
 from sys import exit
 
 class ecb:
@@ -56,7 +60,7 @@ class ecb:
 
 if __name__ == "__main__":
 
-    plaintext = b"Two One Nine TwoTwo One Nine Two"
+    plaintext = b"Two One Nine TwoYellow Submarine"
     key = b"Thats my Kung Fu"
 
     cipher = ecb(key) 
