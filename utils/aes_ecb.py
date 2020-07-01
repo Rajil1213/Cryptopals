@@ -19,6 +19,15 @@ class ecb:
         self.AES = aes(key)
 
     def encrypt(self, plaintext):
+        """encrypts the plaintext using AES-128 in ECB mode
+
+        Args:
+            plaintext (bytes): the plaintext in bytes,
+            if size is not a multiple of 16 bytes, pads the text in PKCS5 standard
+
+        Returns:
+            bytes: the ciphertext in bytes
+        """
 
         length = len(plaintext)
         if length % self.BYTE != 0:
@@ -41,6 +50,14 @@ class ecb:
         return ciphertext
     
     def decrypt(self, ciphertext):
+        """decrypts the ciphertext using AES-128 in ECB mode
+
+        Args:
+            ciphertext (bytes): the ciphertext in bytes, length *must* be a multiple of 16
+
+        Returns:
+            bytes: the plaintext in bytes
+        """
 
         # consider no padding, as not specified in the challenge
         length = len(ciphertext)
